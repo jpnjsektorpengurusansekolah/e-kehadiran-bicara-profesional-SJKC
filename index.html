@@ -22,8 +22,8 @@
   </header>
 
   <!-- 2. Ruang Utama Kad Borang -->
-  <main class="flex-1 flex items-center justify-center p-4 py-8">
-    <div class="w-full max-w-lg bg-white rounded-3xl shadow-xl p-6 sm:p-8 space-y-6 border border-slate-200">
+  <main class="flex-1 flex items-center justify-center p-4 py-6 sm:py-8">
+    <div class="w-full max-w-lg bg-white rounded-3xl shadow-xl p-5 sm:p-8 space-y-5 sm:space-y-6 border border-slate-200">
       
       <!-- Tajuk Program -->
       <div class="text-center space-y-2">
@@ -36,17 +36,17 @@
         <p class="text-xs sm:text-sm text-slate-500">Sila masukkan No. Kad Pengenalan anda</p>
       </div>
 
-      <!-- Bahagian Carian IC -->
+      <!-- Bahagian Carian IC (Responsif Kemas untuk Telefon & Komputer) -->
       <div class="space-y-3">
         <div>
-          <label class="block text-sm font-semibold text-slate-700 mb-1">No. Kad Pengenalan (tanpa '-')</label>
-          <div class="flex gap-2">
+          <label class="block text-sm font-semibold text-slate-700 mb-1.5">No. Kad Pengenalan (tanpa '-')</label>
+          <div class="flex flex-col sm:flex-row gap-2.5">
             <input type="text" id="inputIC" placeholder="Contoh: 800101015555" 
-              class="flex-1 px-4 py-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none text-slate-800"
+              class="w-full flex-1 px-4 py-3 sm:py-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none text-slate-800 text-center sm:text-left text-base"
               oninput="resetPaparanBilaTaip()"
               onkeypress="if(event.key === 'Enter') semakIC()">
             <button id="btnSemak" onclick="semakIC()" 
-              class="bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-semibold px-6 py-2.5 rounded-xl shadow transition flex items-center justify-center min-w-[90px]">
+              class="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-semibold px-7 py-3 sm:py-2.5 rounded-xl shadow-md transition flex items-center justify-center">
               <span id="btnSemakText">Semak</span>
             </button>
           </div>
@@ -56,7 +56,7 @@
 
       <!-- Bahagian Paparan Maklumat Semakan -->
       <div id="sectionMaklumat" class="hidden space-y-5 pt-4 border-t border-slate-200">
-        <div class="bg-blue-50 p-5 rounded-2xl space-y-3 text-sm border border-blue-200">
+        <div class="bg-blue-50 p-4 sm:p-5 rounded-2xl space-y-3 text-sm border border-blue-200">
           <div>
             <span class="text-xs text-slate-500 font-semibold uppercase">Nama Guru Besar:</span>
             <p id="dispNama" class="text-base font-bold text-slate-800"></p>
@@ -116,7 +116,6 @@
     
     let currentData = null;
 
-    // Fungsi sembunyikan maklumat lama secara automatik bila kotak carian diubah/ditaip
     function resetPaparanBilaTaip() {
       document.getElementById("sectionMaklumat").classList.add("hidden");
       document.getElementById("sectionSlip").classList.add("hidden");
@@ -135,7 +134,6 @@
         return;
       }
 
-      // 1. Padam dan sembunyikan semua paparan data terdahulu
       document.getElementById("sectionMaklumat").classList.add("hidden");
       document.getElementById("sectionSlip").classList.add("hidden");
       currentData = null;
@@ -160,12 +158,10 @@
           
           msg.classList.add("hidden");
 
-          // Jika peserta ini SUDAH hadir sebelum ini:
           if (json.sudahHadir) {
             currentData.noSiri = json.noSiri;
             tunjukBahagianSlip(json.noSiri);
           } else {
-            // Jika peserta ini BELUM hadir: paparkan maklumat dan butang "Sahkan Hadir" sahaja
             document.getElementById("sectionMaklumat").classList.remove("hidden");
           }
         } else {
@@ -284,7 +280,7 @@
         link.click();
 
       } catch (e) {
-        alert("Sila pastikan fail template.png telah dimuat naik ke GitHub.");
+        alert("Sila pastikan fail template.png telah dimuat naik.");
       }
     }
   </script>
