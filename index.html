@@ -53,8 +53,8 @@
         <p id="msgStatus" class="text-sm text-center font-medium hidden"></p>
       </div>
 
-      <!-- Bahagian Paparan Maklumat Semakan -->
-      <div id="sectionMaklumat" class="hidden space-y-4 pt-4 border-t border-slate-200">
+      <!-- Bahagian Paparan Maklumat Semakan (Tanpa Input Emel) -->
+      <div id="sectionMaklumat" class="hidden space-y-5 pt-4 border-t border-slate-200">
         <div class="bg-blue-50 p-5 rounded-2xl space-y-3 text-sm border border-blue-200">
           <div>
             <span class="text-xs text-slate-500 font-semibold uppercase">Nama Guru Besar:</span>
@@ -72,7 +72,7 @@
             </div>
           </div>
 
-          <!-- Nama Sekolah & 校名 Berjarak ke Bawah -->
+          <!-- Nama Sekolah & 校名 -->
           <div class="pt-2 border-t border-blue-200 space-y-1.5">
             <span class="text-xs text-slate-500 font-semibold uppercase">Nama Sekolah:</span>
             <p id="dispNamaSekolah" class="font-medium text-slate-800 leading-snug"></p>
@@ -80,14 +80,9 @@
           </div>
         </div>
 
-        <div>
-          <label class="block text-sm font-semibold text-slate-700 mb-1">Alamat Emel</label>
-          <input type="email" id="inputEmail" placeholder="nama@moe.gov.my" 
-            class="w-full px-4 py-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none text-slate-800" required>
-        </div>
-
+        <!-- Butang Terus Sahkan Kehadiran -->
         <button id="btnHadir" onclick="hantarKehadiran()" 
-          class="w-full bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white font-bold py-3 rounded-xl shadow-lg transition">
+          class="w-full bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white font-bold py-3.5 rounded-xl shadow-lg transition text-base">
           Sahkan Hadir
         </button>
       </div>
@@ -172,16 +167,10 @@
     }
 
     async function hantarKehadiran() {
-      const email = document.getElementById("inputEmail").value.trim();
       const btn = document.getElementById("btnHadir");
 
-      if (!email) {
-        alert("Sila masukkan emel anda.");
-        return;
-      }
-
       btn.disabled = true;
-      btn.innerText = "Menghantar...";
+      btn.innerText = "Menyimpan Kehadiran...";
 
       try {
         const payload = {
@@ -192,7 +181,7 @@
           ppd: currentData.ppd,
           namaSekolah: currentData.namaSekolah,
           namaCina: currentData.namaCina,
-          email: email
+          email: "-" // Tidak perlu emel lagi
         };
 
         const res = await fetch(SCRIPT_URL, {
@@ -232,7 +221,6 @@
         const image = await pdfDoc.embedPng(templateBytes);
         const page = pdfDoc.addPage([image.width, image.height]);
 
-        // Lukis latar belakang template
         page.drawImage(image, {
           x: 0,
           y: 0,
@@ -240,18 +228,14 @@
           height: image.height,
         });
 
-        // Tetapan Font
         const fontBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
 
-        // 1. KIRA & LETAK NAMA DI TENGAH (CENTER ALIGNED) DI ATAS GARISAN BIRU
+        // 1. Tulis Nama Di Tengah Di Atas Garisan Biru
         const namaText = currentData.nama.toUpperCase();
         const namaFontSize = 24; 
         const namaWidth = fontBold.widthOfTextAtSize(namaText, namaFontSize);
         
-        // Auto Center Paksi X
         const xNama = (image.width - namaWidth) / 2;
-        
-        // Paksi Y tepat di atas garisan biru (~46.5% dari bawah dokumen)
         const yNama = image.height * 0.465;
 
         page.drawText(namaText, {
@@ -259,14 +243,13 @@
           y: yNama,
           size: namaFontSize,
           font: fontBold,
-          color: rgb(0.12, 0.16, 0.35), // Biru gelap kemas
+          color: rgb(0.12, 0.16, 0.35),
         });
 
-        // 2. LETAK NO. SIRI TEPAT DI SEBELAH LABEL "No.Siri:" DI SUDUT BAWAH KIRI
+        // 2. Tulis No. Siri Di Sebelah Teks 'No.Siri:'
         const siriText = currentData.noSiri;
         const siriFontSize = 13;
         
-        // Koordinat tepat selepas perkataan "No.Siri:"
         const xSiri = image.width * 0.145;
         const ySiri = image.height * 0.125;
 
@@ -278,7 +261,6 @@
           color: rgb(0.2, 0.2, 0.2),
         });
 
-        // Muat turun fail PDF
         const pdfDataUri = await pdfDoc.save();
         const blob = new Blob([pdfDataUri], { type: "application/pdf" });
         const link = document.createElement("a");
