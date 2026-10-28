@@ -53,7 +53,7 @@
         <p id="msgStatus" class="text-sm text-center font-medium hidden"></p>
       </div>
 
-      <!-- Bahagian Paparan Maklumat Semakan (Tanpa Input Emel) -->
+      <!-- Bahagian Paparan Maklumat Semakan -->
       <div id="sectionMaklumat" class="hidden space-y-5 pt-4 border-t border-slate-200">
         <div class="bg-blue-50 p-5 rounded-2xl space-y-3 text-sm border border-blue-200">
           <div>
@@ -80,7 +80,7 @@
           </div>
         </div>
 
-        <!-- Butang Terus Sahkan Kehadiran -->
+        <!-- Butang Sahkan Hadir -->
         <button id="btnHadir" onclick="hantarKehadiran()" 
           class="w-full bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white font-bold py-3.5 rounded-xl shadow-lg transition text-base">
           Sahkan Hadir
@@ -181,7 +181,7 @@
           ppd: currentData.ppd,
           namaSekolah: currentData.namaSekolah,
           namaCina: currentData.namaCina,
-          email: "-" // Tidak perlu emel lagi
+          email: "-"
         };
 
         const res = await fetch(SCRIPT_URL, {
@@ -230,28 +230,31 @@
 
         const fontBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
 
-        // 1. Tulis Nama Di Tengah Di Atas Garisan Biru
+        // 1. TULIS NAMA GURU BESAR (SAIZ 44, LEBIH BESAR & JELAS DI ATAS GARISAN)
         const namaText = currentData.nama.toUpperCase();
-        const namaFontSize = 24; 
+        const namaFontSize = 44; 
         const namaWidth = fontBold.widthOfTextAtSize(namaText, namaFontSize);
         
+        // Auto Center Paksi X
         const xNama = (image.width - namaWidth) / 2;
-        const yNama = image.height * 0.465;
+        // Paksi Y dinaikkan sedikit (~47.5%) supaya tidak rapat ke garisan biru
+        const yNama = image.height * 0.475;
 
         page.drawText(namaText, {
           x: xNama,
           y: yNama,
           size: namaFontSize,
           font: fontBold,
-          color: rgb(0.12, 0.16, 0.35),
+          color: rgb(0.1, 0.15, 0.3), // Biru gelap kemas
         });
 
-        // 2. Tulis No. Siri Di Sebelah Teks 'No.Siri:'
+        // 2. TULIS NO. SIRI (SAIZ 22, JELAS DI SEBELAH LABEL 'No.Siri:')
         const siriText = currentData.noSiri;
-        const siriFontSize = 13;
+        const siriFontSize = 22;
         
-        const xSiri = image.width * 0.145;
-        const ySiri = image.height * 0.125;
+        // Kedudukan seimbang di sebelah label No.Siri:
+        const xSiri = image.width * 0.150;
+        const ySiri = image.height * 0.122;
 
         page.drawText(siriText, {
           x: xSiri,
