@@ -43,6 +43,7 @@
           <div class="flex gap-2">
             <input type="text" id="inputIC" placeholder="Contoh: 850316016385" 
               class="flex-1 px-4 py-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none text-slate-800"
+              oninput="resetPaparanBilaTaip()"
               onkeypress="if(event.key === 'Enter') semakIC()">
             <button id="btnSemak" onclick="semakIC()" 
               class="bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-semibold px-6 py-2.5 rounded-xl shadow transition flex items-center justify-center min-w-[90px]">
@@ -115,6 +116,14 @@
     
     let currentData = null;
 
+    // Fungsi sembunyikan maklumat lama secara automatik bila kotak carian diubah/ditaip
+    function resetPaparanBilaTaip() {
+      document.getElementById("sectionMaklumat").classList.add("hidden");
+      document.getElementById("sectionSlip").classList.add("hidden");
+      document.getElementById("msgStatus").classList.add("hidden");
+      currentData = null;
+    }
+
     async function semakIC() {
       const ic = document.getElementById("inputIC").value.trim();
       const msg = document.getElementById("msgStatus");
@@ -125,6 +134,11 @@
         alert("Sila masukkan No. IC!");
         return;
       }
+
+      // 1. Padam dan sembunyikan semua paparan data terdahulu
+      document.getElementById("sectionMaklumat").classList.add("hidden");
+      document.getElementById("sectionSlip").classList.add("hidden");
+      currentData = null;
 
       btn.disabled = true;
       btnText.innerText = "...";
@@ -144,18 +158,19 @@
           document.getElementById("dispNamaSekolah").innerText = currentData.namaSekolah;
           document.getElementById("dispNamaCina").innerText = currentData.namaCina;
           
-          document.getElementById("sectionMaklumat").classList.remove("hidden");
           msg.classList.add("hidden");
 
+          // Jika peserta ini SUDAH hadir sebelum ini:
           if (json.sudahHadir) {
             currentData.noSiri = json.noSiri;
             tunjukBahagianSlip(json.noSiri);
+          } else {
+            // Jika peserta ini BELUM hadir: paparkan maklumat dan butang "Sahkan Hadir" sahaja
+            document.getElementById("sectionMaklumat").classList.remove("hidden");
           }
         } else {
           msg.className = "text-sm text-center text-red-500 block";
           msg.innerText = json.message || "Rekod tidak dijumpai.";
-          document.getElementById("sectionMaklumat").classList.add("hidden");
-          document.getElementById("sectionSlip").classList.add("hidden");
         }
       } catch (err) {
         msg.className = "text-sm text-center text-red-500 block";
@@ -230,14 +245,12 @@
 
         const fontBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
 
-        // 1. TULIS NAMA GURU BESAR (SAIZ 44, LEBIH BESAR & JELAS DI ATAS GARISAN)
+        // 1. TULIS NAMA GURU BESAR (SAIZ 44, AUTO CENTER DI ATAS GARISAN)
         const namaText = currentData.nama.toUpperCase();
         const namaFontSize = 44; 
         const namaWidth = fontBold.widthOfTextAtSize(namaText, namaFontSize);
         
-        // Auto Center Paksi X
         const xNama = (image.width - namaWidth) / 2;
-        // Paksi Y dinaikkan sedikit (~47.5%) supaya tidak rapat ke garisan biru
         const yNama = image.height * 0.475;
 
         page.drawText(namaText, {
@@ -245,14 +258,13 @@
           y: yNama,
           size: namaFontSize,
           font: fontBold,
-          color: rgb(0.1, 0.15, 0.3), // Biru gelap kemas
+          color: rgb(0.1, 0.15, 0.3),
         });
 
-        // 2. TULIS NO. SIRI (SAIZ 22, JELAS DI SEBELAH LABEL 'No.Siri:')
+        // 2. TULIS NO. SIRI (SAIZ 22 DI SEBELAH LABEL 'No.Siri:')
         const siriText = currentData.noSiri;
         const siriFontSize = 22;
         
-        // Kedudukan seimbang di sebelah label No.Siri:
         const xSiri = image.width * 0.150;
         const ySiri = image.height * 0.122;
 
@@ -272,7 +284,7 @@
         link.click();
 
       } catch (e) {
-        alert("Ralat semasa menjana slip. Sila pastikan fail template.png telah dimuat naik.");
+        alert("Sila pastikan fail template.png telah dimuat naik ke GitHub.");
       }
     }
   </script>
