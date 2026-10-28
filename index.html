@@ -7,62 +7,55 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
 </head>
-<body class="bg-slate-100 min-h-screen flex flex-col justify-between items-center p-4 sm:p-6">
+<body class="bg-slate-100 min-h-screen flex items-center justify-center p-4">
 
-  <!-- Ruang Kandungan Tengah -->
-  <div class="w-full max-w-lg my-auto space-y-4">
+  <!-- Kad Keseluruhan -->
+  <div class="w-full max-w-lg bg-white rounded-3xl shadow-2xl overflow-hidden border border-slate-200">
     
-    <!-- Header Rasmi Berwarna Biru Tua -->
-    <div class="bg-slate-900 text-white p-5 rounded-2xl shadow-md border border-slate-800 flex items-center gap-4">
-      <img src="logo-jpn.png" alt="Logo JPN Johor" class="h-14 w-auto object-contain bg-white/10 p-1.5 rounded-xl shrink-0" onerror="this.style.display='none'">
-      <div class="border-l-2 border-slate-700 pl-4">
+    <!-- 1. Header Rasmi -->
+    <div class="bg-slate-900 text-white p-5 flex items-center gap-4 border-b-4 border-amber-500">
+      <img src="logo-jpn.png" alt="Logo JPN" class="h-14 w-auto object-contain bg-white/10 p-1.5 rounded-xl shrink-0" onerror="this.style.display='none'">
+      <div>
         <p class="text-[11px] font-semibold text-blue-300 tracking-wider uppercase leading-tight">Jabatan Pendidikan Negeri Johor</p>
         <p class="text-base font-bold text-white leading-snug">Sektor Pengurusan Sekolah</p>
         <p class="text-xs text-slate-300">Unit Prasekolah dan Rendah</p>
       </div>
     </div>
 
-    <!-- Kad Pengesahan Kehadiran -->
-    <div class="bg-white rounded-2xl shadow-xl p-6 sm:p-8 space-y-6 border border-slate-200">
+    <!-- 2. Kandungan Borang -->
+    <div class="p-6 sm:p-8 space-y-6">
       
       <!-- Tajuk Program -->
-      <div class="text-center space-y-2">
-        <span class="inline-block bg-blue-100 text-blue-800 text-xs px-3 py-1 rounded-full font-bold uppercase tracking-wider">
+      <div class="text-center space-y-3">
+        <span class="inline-block bg-blue-100 text-blue-800 text-sm sm:text-base px-4 py-1.5 rounded-full font-extrabold uppercase tracking-wide border border-blue-200">
           Pengesahan Kehadiran
         </span>
-        <h1 class="text-base sm:text-lg font-bold text-slate-800 leading-snug">
+        <h1 class="text-base sm:text-lg font-black text-slate-800 leading-snug">
           BICARA PROFESIONAL PEMANTAPAN TADBIR URUS DAN KEPIMPINAN SEKOLAH UNTUK GURU BESAR SJKC NEGERI JOHOR
         </h1>
         <p class="text-xs sm:text-sm text-slate-500">Sila masukkan No. Kad Pengenalan anda</p>
       </div>
 
-      <!-- Bahagian 1: Carian IC -->
-      <div class="space-y-4">
+      <!-- Bahagian Carian IC -->
+      <div class="space-y-3">
         <div>
           <label class="block text-sm font-semibold text-slate-700 mb-1">No. Kad Pengenalan (tanpa '-')</label>
           <div class="flex gap-2">
             <input type="text" id="inputIC" placeholder="Contoh: 850316016385" 
-              class="flex-1 px-4 py-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none text-slate-800">
+              class="flex-1 px-4 py-2.5 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none text-slate-800"
+              onkeypress="if(event.key === 'Enter') semakIC()">
             <button id="btnSemak" onclick="semakIC()" 
-              class="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-5 py-2.5 rounded-xl shadow transition">
+              class="bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-semibold px-6 py-2.5 rounded-xl shadow transition">
               Semak
             </button>
           </div>
         </div>
-        <p id="msgStatus" class="text-sm text-center hidden"></p>
+        <p id="msgStatus" class="text-sm text-center font-medium hidden"></p>
       </div>
 
-      <!-- Bahagian 2: Paparan Maklumat Semakan -->
+      <!-- Bahagian Paparan Maklumat Semakan (Tanpa Tajuk Program) -->
       <div id="sectionMaklumat" class="hidden space-y-4 pt-4 border-t border-slate-200">
-        <div class="bg-blue-50 p-4 rounded-xl space-y-3 text-sm border border-blue-200">
-          
-          <div class="pb-2 border-b border-blue-200 text-center">
-            <span class="text-[11px] text-blue-700 font-bold uppercase tracking-wider">Program:</span>
-            <p class="text-xs sm:text-sm font-bold text-slate-800 mt-0.5 leading-snug">
-              BICARA PROFESIONAL PEMANTAPAN TADBIR URUS DAN KEPIMPINAN SEKOLAH UNTUK GURU BESAR SJKC NEGERI JOHOR
-            </p>
-          </div>
-
+        <div class="bg-blue-50 p-5 rounded-2xl space-y-3 text-sm border border-blue-200">
           <div>
             <span class="text-xs text-slate-500 font-semibold uppercase">Nama Guru Besar:</span>
             <p id="dispNama" class="text-base font-bold text-slate-800"></p>
@@ -92,35 +85,37 @@
         </div>
 
         <button id="btnHadir" onclick="hantarKehadiran()" 
-          class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl shadow-lg transition">
+          class="w-full bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white font-bold py-3 rounded-xl shadow-lg transition">
           Sahkan Hadir
         </button>
       </div>
 
-      <!-- Bahagian 3: Muat Turun Slip -->
+      <!-- Bahagian Slip Kehadiran Selesai -->
       <div id="sectionSlip" class="hidden space-y-4 pt-4 border-t border-slate-200 text-center">
-        <div class="p-4 bg-emerald-50 rounded-xl text-emerald-800 font-medium border border-emerald-200">
+        <div class="p-4 bg-emerald-50 rounded-2xl text-emerald-800 font-medium border border-emerald-200">
           ✓ Kehadiran telah disahkan!
           <p class="text-xs mt-1 text-slate-600">No. Siri: <span id="dispNoSiri" class="font-mono font-bold text-emerald-700"></span></p>
         </div>
 
         <button onclick="janaSlipPDF()" 
-          class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-xl shadow-lg transition">
+          class="w-full bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white font-bold py-3 rounded-xl shadow-lg transition">
           📄 Muat Turun Slip Kehadiran
         </button>
       </div>
 
     </div>
+
+    <!-- 3. Footer Rasmi -->
+    <div class="bg-slate-50 p-4 border-t border-slate-200 text-center text-[11px] text-slate-500 leading-relaxed">
+      <p class="font-semibold text-slate-600">Hak Cipta Terpelihara &copy; Jabatan Pendidikan Negeri Johor</p>
+      <p>Sektor Pengurusan Sekolah (Unit Prasekolah dan Rendah - SJKC) &mdash; Untuk Kegunaan Dalaman Sahaja</p>
+    </div>
+
   </div>
 
-  <!-- Footer -->
-  <footer class="mt-8 text-center text-xs text-slate-500 max-w-lg leading-relaxed">
-    <p>Hak Cipta Terpelihara &copy; Jabatan Pendidikan Negeri Johor</p>
-    <p>Sektor Pengurusan Sekolah (Unit Prasekolah dan Rendah - SJKC) &mdash; Untuk Kegunaan Dalaman Sahaja</p>
-  </footer>
-
+  <!-- Kod Logik JavaScript -->
   <script>
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwXYGlW0mV6scm84IVjK5b7YxF1lO_ROc_PcbLLEC041fHPZ7aB_fYCRpQ1enNZ_iqx/exec"; 
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwXYGlW0mV6scm84IVjK5b7YxF1lO_ROc_PcbLLEC041fHPZ7aB_fYCRpQ1enNZ_iqx/exec";
     
     let currentData = null;
 
@@ -129,13 +124,15 @@
       const msg = document.getElementById("msgStatus");
       const btn = document.getElementById("btnSemak");
 
-      if (!ic) return alert("Sila masukkan No. IC!");
+      if (!ic) {
+        alert("Sila masukkan No. IC!");
+        return;
+      }
 
       btn.disabled = true;
-      btn.innerText = "Menyemak...";
-      msg.className = "text-sm text-center text-slate-500";
-      msg.innerText = "Mencari rekod...";
-      msg.classList.remove("hidden");
+      btn.innerText = "...";
+      msg.className = "text-sm text-center text-blue-600 block";
+      msg.innerText = "Mencari rekod di pangkalan data...";
 
       try {
         const res = await fetch(`${SCRIPT_URL}?action=cariIC&ic=${encodeURIComponent(ic)}`);
@@ -157,14 +154,14 @@
             tunjukBahagianSlip(json.noSiri);
           }
         } else {
-          msg.className = "text-sm text-center text-red-500";
-          msg.innerText = json.message;
+          msg.className = "text-sm text-center text-red-500 block";
+          msg.innerText = json.message || "Rekod tidak dijumpai.";
           document.getElementById("sectionMaklumat").classList.add("hidden");
           document.getElementById("sectionSlip").classList.add("hidden");
         }
       } catch (err) {
-        msg.className = "text-sm text-center text-red-500";
-        msg.innerText = "Ralat semasa menghubungi pelayan.";
+        msg.className = "text-sm text-center text-red-500 block";
+        msg.innerText = "Ralat: Gagal menghubungi pelayan Google Sheets.";
       } finally {
         btn.disabled = false;
         btn.innerText = "Semak";
@@ -175,7 +172,10 @@
       const email = document.getElementById("inputEmail").value.trim();
       const btn = document.getElementById("btnHadir");
 
-      if (!email) return alert("Sila masukkan emel anda.");
+      if (!email) {
+        alert("Sila masukkan emel anda.");
+        return;
+      }
 
       btn.disabled = true;
       btn.innerText = "Menghantar...";
@@ -221,44 +221,48 @@
     async function janaSlipPDF() {
       const { PDFDocument, rgb, StandardFonts } = PDFLib;
 
-      const templateUrl = "template.png"; 
-      const templateBytes = await fetch(templateUrl).then(res => res.arrayBuffer());
+      try {
+        const templateUrl = "template.png"; 
+        const templateBytes = await fetch(templateUrl).then(res => res.arrayBuffer());
 
-      const pdfDoc = await PDFDocument.create();
-      const image = await pdfDoc.embedPng(templateBytes);
-      const page = pdfDoc.addPage([image.width, image.height]);
+        const pdfDoc = await PDFDocument.create();
+        const image = await pdfDoc.embedPng(templateBytes);
+        const page = pdfDoc.addPage([image.width, image.height]);
 
-      page.drawImage(image, {
-        x: 0,
-        y: 0,
-        width: image.width,
-        height: image.height,
-      });
+        page.drawImage(image, {
+          x: 0,
+          y: 0,
+          width: image.width,
+          height: image.height,
+        });
 
-      const font = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
+        const font = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
 
-      page.drawText(currentData.nama.toUpperCase(), {
-        x: 100,
-        y: 450,
-        size: 20,
-        font: font,
-        color: rgb(0.1, 0.1, 0.1),
-      });
+        page.drawText(currentData.nama.toUpperCase(), {
+          x: 100,
+          y: 450,
+          size: 20,
+          font: font,
+          color: rgb(0.1, 0.1, 0.1),
+        });
 
-      page.drawText(`No. Siri: ${currentData.noSiri}`, {
-        x: 100,
-        y: 410,
-        size: 14,
-        font: font,
-        color: rgb(0.3, 0.3, 0.3),
-      });
+        page.drawText(`No. Siri: ${currentData.noSiri}`, {
+          x: 100,
+          y: 410,
+          size: 14,
+          font: font,
+          color: rgb(0.3, 0.3, 0.3),
+        });
 
-      const pdfDataUri = await pdfDoc.save();
-      const blob = new Blob([pdfDataUri], { type: "application/pdf" });
-      const link = document.createElement("a");
-      link.href = URL.createObjectURL(blob);
-      link.download = `Slip_Kehadiran_${currentData.ic}.pdf`;
-      link.click();
+        const pdfDataUri = await pdfDoc.save();
+        const blob = new Blob([pdfDataUri], { type: "application/pdf" });
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.download = `Slip_Kehadiran_${currentData.ic}.pdf`;
+        link.click();
+      } catch (e) {
+        alert("Sila pastikan fail template.png telah dimuat naik ke GitHub.");
+      }
     }
   </script>
 </body>
