@@ -3,8 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sistem Pengesahan Kehadiran & Slip</title>
-  <!-- Tailwind CSS & pdf-lib CDN -->
+  <title>Pengesahan Kehadiran</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
 </head>
@@ -16,12 +15,12 @@
       <p class="text-sm text-slate-500 mt-1">Sila masukkan No. Kad Pengenalan anda</p>
     </div>
 
-    <!-- Bahagian 1: Carian IC -->
+    <!-- Carian IC -->
     <div class="space-y-4">
       <div>
         <label class="block text-sm font-medium text-slate-700">No. Kad Pengenalan (tanpa '-')</label>
         <div class="mt-1 flex gap-2">
-          <input type="text" id="inputIC" placeholder="Contoh: 800101011234" 
+          <input type="text" id="inputIC" placeholder="Contoh: 850316016385" 
             class="flex-1 px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
           <button id="btnSemak" onclick="semakIC()" 
             class="bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2 rounded-lg transition">
@@ -32,16 +31,28 @@
       <p id="msgStatus" class="text-sm text-center hidden"></p>
     </div>
 
-    <!-- Bahagian 2: Maklumat & Pengesahan Kehadiran -->
+    <!-- Paparan Maklumat Lengkap -->
     <div id="sectionMaklumat" class="hidden space-y-4 pt-4 border-t border-slate-200">
-      <div class="bg-blue-50 p-4 rounded-lg space-y-2">
+      <div class="bg-blue-50 p-4 rounded-xl space-y-3 text-sm">
         <div>
-          <span class="text-xs text-slate-500 font-semibold uppercase">Nama:</span>
-          <p id="dispNama" class="font-bold text-slate-800"></p>
+          <span class="text-xs text-slate-500 font-semibold uppercase">Nama Guru Besar:</span>
+          <p id="dispNama" class="text-base font-bold text-slate-800"></p>
         </div>
-        <div>
-          <span class="text-xs text-slate-500 font-semibold uppercase">Sekolah / Organisasi:</span>
-          <p id="dispSekolah" class="text-slate-700"></p>
+        
+        <div class="grid grid-cols-2 gap-2 pt-2 border-t border-blue-100">
+          <div>
+            <span class="text-xs text-slate-500 font-semibold uppercase">Kod Sekolah:</span>
+            <p id="dispKodSekolah" class="font-medium text-slate-700"></p>
+          </div>
+          <div>
+            <span class="text-xs text-slate-500 font-semibold uppercase">PPD:</span>
+            <p id="dispPPD" class="font-medium text-slate-700"></p>
+          </div>
+        </div>
+
+        <div class="pt-2 border-t border-blue-100">
+          <span class="text-xs text-slate-500 font-semibold uppercase">Nama Sekolah & 校名:</span>
+          <p id="dispNamaSekolah" class="font-medium text-slate-700"></p>
         </div>
       </div>
 
@@ -57,7 +68,7 @@
       </button>
     </div>
 
-    <!-- Bahagian 3: Muat Turun Slip -->
+    <!-- Slip Kehadiran -->
     <div id="sectionSlip" class="hidden space-y-4 pt-4 border-t border-slate-200 text-center">
       <div class="p-4 bg-emerald-50 rounded-lg text-emerald-800 font-medium">
         Kehadiran telah disahkan!
@@ -96,12 +107,16 @@
 
         if (json.success) {
           currentData = json.data;
+          
+          // Paparkan maklumat yang betul
           document.getElementById("dispNama").innerText = currentData.nama;
-          document.getElementById("dispSekolah").innerText = currentData.sekolah;
+          document.getElementById("dispKodSekolah").innerText = currentData.kodSekolah;
+          document.getElementById("dispPPD").innerText = currentData.ppd;
+          document.getElementById("dispNamaSekolah").innerText = `${currentData.namaSekolah} (${currentData.namaCina})`;
+          
           document.getElementById("sectionMaklumat").classList.remove("hidden");
           msg.classList.add("hidden");
 
-          // Jika individu ini sudah pernah hadir sebelumnya
           if (json.sudahHadir) {
             currentData.noSiri = json.noSiri;
             tunjukBahagianSlip(json.noSiri);
@@ -114,7 +129,7 @@
         }
       } catch (err) {
         msg.className = "text-sm text-center text-red-500";
-        msg.innerText = "Ralat semasa menghubungkan pelayan.";
+        msg.innerText = "Ralat semasa menghubungi pelayan.";
       } finally {
         btn.disabled = false;
         btn.innerText = "Semak";
@@ -135,7 +150,10 @@
           action: "simpanKehadiran",
           ic: currentData.ic,
           nama: currentData.nama,
-          sekolah: currentData.sekolah,
+          kodSekolah: currentData.kodSekolah,
+          ppd: currentData.ppd,
+          namaSekolah: currentData.namaSekolah,
+          namaCina: currentData.namaCina,
           email: email
         };
 
@@ -165,15 +183,12 @@
       document.getElementById("sectionMaklumat").classList.add("hidden");
     }
 
-    // Fungsi mengubah template dan menambah Nama & No. Siri
     async function janaSlipPDF() {
       const { PDFDocument, rgb, StandardFonts } = PDFLib;
 
-      // 1. Dapatkan fail template (Pastikan template.png atau template.pdf berada di folder sama)
       const templateUrl = "template.png"; 
       const templateBytes = await fetch(templateUrl).then(res => res.arrayBuffer());
 
-      // 2. Buat dokumen PDF baru
       const pdfDoc = await PDFDocument.create();
       const image = await pdfDoc.embedPng(templateBytes);
       const page = pdfDoc.addPage([image.width, image.height]);
@@ -187,15 +202,16 @@
 
       const font = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
 
-      // 3. Tulis Nama dan No. Siri di atas koordinat (Laraskan nombor X dan Y mengikut reka bentuk templat anda)
+      // Tulis Nama Guru Besar (Lajur F)
       page.drawText(currentData.nama.toUpperCase(), {
-        x: 100, // Koordinat paksi X
-        y: 450, // Koordinat paksi Y (dikira dari bawah ke atas)
-        size: 22,
+        x: 100,
+        y: 450,
+        size: 20,
         font: font,
         color: rgb(0.1, 0.1, 0.1),
       });
 
+      // Tulis No Siri
       page.drawText(`No. Siri: ${currentData.noSiri}`, {
         x: 100,
         y: 410,
@@ -204,7 +220,6 @@
         color: rgb(0.3, 0.3, 0.3),
       });
 
-      // 4. Muat turun PDF
       const pdfDataUri = await pdfDoc.save();
       const blob = new Blob([pdfDataUri], { type: "application/pdf" });
       const link = document.createElement("a");
