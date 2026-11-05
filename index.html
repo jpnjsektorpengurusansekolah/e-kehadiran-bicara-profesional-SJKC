@@ -36,7 +36,13 @@
         <p class="text-xs sm:text-sm text-slate-500">Sila masukkan No. Kad Pengenalan anda</p>
       </div>
 
-      <!-- Bahagian Carian IC (Responsif Kemas untuk Telefon & Komputer) -->
+      <!-- Notis Apabila Sistem Ditutup -->
+      <div id="bannerTutup" class="hidden p-4 bg-amber-50 rounded-2xl border border-amber-200 text-center space-y-1">
+        <p class="font-bold text-amber-800 text-sm">⚠️ PENDAFTARAN KEHADIRAN TELAH DITUTUP</p>
+        <p class="text-xs text-amber-700">Slot pendaftaran kehadiran kini tidak dibuka. Peserta yang telah mendaftar masih boleh menyemak dan memuat turun slip.</p>
+      </div>
+
+      <!-- Bahagian Carian IC -->
       <div class="space-y-3">
         <div>
           <label class="block text-sm font-semibold text-slate-700 mb-1.5">No. Kad Pengenalan (tanpa '-')</label>
@@ -73,7 +79,6 @@
             </div>
           </div>
 
-          <!-- Nama Sekolah & 校名 -->
           <div class="pt-2 border-t border-blue-200 space-y-1.5">
             <span class="text-xs text-slate-500 font-semibold uppercase">Nama Sekolah:</span>
             <p id="dispNamaSekolah" class="font-medium text-slate-800 leading-snug"></p>
@@ -81,11 +86,16 @@
           </div>
         </div>
 
-        <!-- Butang Sahkan Hadir -->
+        <!-- Butang Sahkan Hadir (Disembunyikan automatik jika sistem ditutup) -->
         <button id="btnHadir" onclick="hantarKehadiran()" 
           class="w-full bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white font-bold py-3.5 rounded-xl shadow-lg transition text-base">
           Sahkan Hadir
         </button>
+        
+        <!-- Mesej Jika Sistem Tutup Untuk Pendaftar Baharu -->
+        <div id="msgTutupBaru" class="hidden p-3 bg-red-50 text-red-700 text-center rounded-xl text-xs font-semibold border border-red-200">
+          Maaf, pendaftaran kehadiran tidak dapat disahkan kerana sistem telah ditutup oleh urus setia.
+        </div>
       </div>
 
       <!-- Bahagian Slip Kehadiran Selesai -->
@@ -115,6 +125,30 @@
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwXYGlW0mV6scm84IVjK5b7YxF1lO_ROc_PcbLLEC041fHPZ7aB_fYCRpQ1enNZ_iqx/exec";
     
     let currentData = null;
+    let sistemStatusSemasa = "BUKA";
+
+    // Semak status pembukaan sistem sebaik sahaja laman web dimuatkan
+    window.onload = async function() {
+      try {
+        const res = await fetch(`${SCRIPT_URL}?action=semakStatusSistem`);
+        const json = await res.json();
+        if (json.success) {
+          sistemStatusSemasa = json.statusSistem;
+          kemasKiniPaparanStatus();
+        }
+      } catch (e) {
+        console.log("Gagal menyemak status awal sistem.");
+      }
+    };
+
+    function kemasKiniPaparanStatus() {
+      const banner = document.getElementById("bannerTutup");
+      if (sistemStatusSemasa === "TUTUP") {
+        banner.classList.remove("hidden");
+      } else {
+        banner.classList.add("hidden");
+      }
+    }
 
     function resetPaparanBilaTaip() {
       document.getElementById("sectionMaklumat").classList.add("hidden");
@@ -149,6 +183,8 @@
 
         if (json.success) {
           currentData = json.data;
+          sistemStatusSemasa = json.statusSistem || "BUKA";
+          kemasKiniPaparanStatus();
           
           document.getElementById("dispNama").innerText = currentData.nama;
           document.getElementById("dispKodSekolah").innerText = currentData.kodSekolah;
@@ -158,11 +194,22 @@
           
           msg.classList.add("hidden");
 
+          // Jika peserta ini SUDAH hadir sebelum ini (mereka tetap boleh muat turun slip walaupun sistem TUTUP)
           if (json.sudahHadir) {
             currentData.noSiri = json.noSiri;
             tunjukBahagianSlip(json.noSiri);
           } else {
+            // Jika BELUM hadir:
             document.getElementById("sectionMaklumat").classList.remove("hidden");
+            
+            // Kunci butang kehadiran jika status TUTUP
+            if (sistemStatusSemasa === "TUTUP") {
+              document.getElementById("btnHadir").classList.add("hidden");
+              document.getElementById("msgTutupBaru").classList.remove("hidden");
+            } else {
+              document.getElementById("btnHadir").classList.remove("hidden");
+              document.getElementById("msgTutupBaru").classList.add("hidden");
+            }
           }
         } else {
           msg.className = "text-sm text-center text-red-500 block";
@@ -241,7 +288,7 @@
 
         const fontBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
 
-        // 1. TULIS NAMA GURU BESAR (SAIZ 44, AUTO CENTER DI ATAS GARISAN)
+        // 1. Tulis Nama Guru Besar (Saiz 44)
         const namaText = currentData.nama.toUpperCase();
         const namaFontSize = 44; 
         const namaWidth = fontBold.widthOfTextAtSize(namaText, namaFontSize);
@@ -257,7 +304,7 @@
           color: rgb(0.1, 0.15, 0.3),
         });
 
-        // 2. TULIS NO. SIRI (SAIZ 22 DI SEBELAH LABEL 'No.Siri:')
+        // 2. Tulis No. Siri (Saiz 22)
         const siriText = currentData.noSiri;
         const siriFontSize = 22;
         
@@ -280,7 +327,7 @@
         link.click();
 
       } catch (e) {
-        alert("Sila pastikan fail template.png telah dimuat naik.");
+        alert("Ralat semasa menjana slip. Sila pastikan fail template.png telah dimuat naik.");
       }
     }
   </script>
